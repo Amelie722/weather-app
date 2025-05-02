@@ -66,7 +66,6 @@
         // 현재 날씨 가져오기
         async function fetchCurrentWeather() {
             const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
-
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('날씨 정보를 가져오는 데 실패했습니다.');
@@ -94,7 +93,6 @@
         // 시간대별 날씨 가져오기
         async function fetchHourlyWeather() {
             const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
-
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('시간대별 날씨 정보를 가져오는 데 실패했습니다.');
@@ -107,6 +105,12 @@
 
         function displayHourlyWeather(data) {
             const hourlyContainer = document.getElementById('hourly-weather');
+            const weeklyContainer = document.getElementById('weekly-weather');
+
+            // 주간 날씨 숨기기
+            weeklyContainer.style.display = 'none';
+
+            // 시간대별 날씨 표시
             hourlyContainer.style.display = 'block';
             hourlyContainer.innerHTML = "<h3>⏳ 오늘의 시간대별 날씨</h3>";
 
@@ -127,7 +131,6 @@
         // 주간 날씨 가져오기
         async function fetchWeeklyWeather() {
             const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
-
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('주간 날씨 정보를 가져오는 데 실패했습니다.');
@@ -140,10 +143,15 @@
 
         function displayWeeklyWeather(data) {
             const weeklyContainer = document.getElementById('weekly-weather');
+            const hourlyContainer = document.getElementById('hourly-weather');
+
+            // 시간대별 날씨 숨기기
+            hourlyContainer.style.display = 'none';
+
+            // 주간 날씨 표시
             weeklyContainer.style.display = 'block';
             weeklyContainer.innerHTML = "<h3>📅 주간 날씨</h3>";
 
-            // 하루마다 첫 번째 데이터 선택 (3시간 간격 데이터 중 첫 번째 값 사용)
             let dailyData = {};
             data.list.forEach(item => {
                 const date = new Date(item.dt * 1000).toLocaleDateString('ko-KR');
