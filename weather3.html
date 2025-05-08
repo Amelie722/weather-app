@@ -12,6 +12,14 @@
             color: white;
             padding: 20px;
         }
+        .corner-icon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            z-index: 1000;
+        }
         .weather-container {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 15px;
@@ -48,6 +56,9 @@
     </style>
 </head>
 <body>
+    <!-- 좌측 상단 캐릭터 이미지 -->
+    <img src="weather_character01.png" alt="캐릭터" class="corner-icon">
+
     <h1>🌤 대전의 현재 날씨</h1>
     <div class="weather-container" id="current-weather">
         <p>날씨 정보를 불러오는 중...</p>
@@ -63,7 +74,6 @@
         const apiKey = 'f46b28cd19072ab766192c95e11ce426';
         const city = 'Daejeon,KR';
 
-        // 현재 날씨 가져오기
         async function fetchCurrentWeather() {
             const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
             try {
@@ -90,7 +100,6 @@
             `;
         }
 
-        // 시간대별 날씨 가져오기
         async function fetchHourlyWeather() {
             const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
             try {
@@ -107,10 +116,7 @@
             const hourlyContainer = document.getElementById('hourly-weather');
             const weeklyContainer = document.getElementById('weekly-weather');
 
-            // 주간 날씨 숨기기
             weeklyContainer.style.display = 'none';
-
-            // 시간대별 날씨 표시
             hourlyContainer.style.display = 'block';
             hourlyContainer.innerHTML = "<h3>⏳ 오늘의 시간대별 날씨</h3>";
 
@@ -128,7 +134,6 @@
             });
         }
 
-        // 주간 날씨 가져오기
         async function fetchWeeklyWeather() {
             const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
             try {
@@ -145,10 +150,7 @@
             const weeklyContainer = document.getElementById('weekly-weather');
             const hourlyContainer = document.getElementById('hourly-weather');
 
-            // 시간대별 날씨 숨기기
             hourlyContainer.style.display = 'none';
-
-            // 주간 날씨 표시
             weeklyContainer.style.display = 'block';
             weeklyContainer.innerHTML = "<h3>📅 주간 날씨</h3>";
 
@@ -174,7 +176,6 @@
             });
         }
 
-        // 페이지 로딩 시 현재 날씨 가져오기
         fetchCurrentWeather();
     </script>
 </body>
