@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대전 날씨</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -13,9 +14,9 @@
             padding: 20px;
         }
         .corner-icon {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            display: inline-block;
+            margin-right: 0;
+            vertical-align: middle;
             width: 50px;
             height: 50px;
             z-index: 1000;
@@ -23,21 +24,25 @@
         .weather-container {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             display: inline-block;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             margin-bottom: 10px;
+            width: 16.66%; /* 변경: width를 16.66%로 설정 (100% / 6개) */
+            margin-right: 10px;
+            vertical-align: top;
+            box-sizing: border-box; /* 추가: padding, border가 width에 포함되도록 설정 */
         }
         .weather-icon {
             width: 80px;
         }
         .temp {
-            font-size: 2em;
+            font-size: 1.5em;
             font-weight: bold;
         }
         .desc {
-            font-size: 1.2em;
-            margin-top: 10px;
+            font-size: 0.9em;
+            margin-top: 5px;
         }
         .btn {
             background: white;
@@ -52,14 +57,41 @@
         .forecast-container {
             display: none;
             margin-top: 15px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        #current-weather-title {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        #weekly-weather {
+            display: none;
+            margin-top: 15px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
-    <!-- 좌측 상단 캐릭터 이미지 -->
     <img src="https://amelie722.github.io/weather-app/weather_character01.png" alt="캐릭터" class="corner-icon">
-
-    <h1>🌤 대전의 현재 날씨</h1>
+    <h1 id="current-weather-title">대전의 현재 날씨</h1>
     <div class="weather-container" id="current-weather">
         <p>날씨 정보를 불러오는 중...</p>
     </div>
@@ -67,8 +99,13 @@
     <button class="btn" onclick="fetchHourlyWeather()">⏳ 시간대별 날씨 보기</button>
     <button class="btn" onclick="fetchWeeklyWeather()">📅 주간 날씨 보기</button>
 
-    <div class="forecast-container" id="hourly-weather"></div>
-    <div class="forecast-container" id="weekly-weather"></div>
+    <div class="forecast-container" id="hourly-weather">
+        <div class="chart-container">
+            <canvas id="hourlyChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    <div class="forecast-container" id="weekly-weather">
+    </div>
 
     <script>
         const apiKey = 'f46b28cd19072ab766192c95e11ce426';
@@ -100,6 +137,7 @@
             `;
         }
 
+        let hourlyChartInstance = null;
         async function fetchHourlyWeather() {
             const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
             try {
@@ -115,22 +153,97 @@
         function displayHourlyWeather(data) {
             const hourlyContainer = document.getElementById('hourly-weather');
             const weeklyContainer = document.getElementById('weekly-weather');
+            const ctx = document.getElementById('hourlyChart').getContext('2d');
 
             weeklyContainer.style.display = 'none';
             hourlyContainer.style.display = 'block';
-            hourlyContainer.innerHTML = "<h3>⏳ 오늘의 시간대별 날씨</h3>";
 
-            data.list.slice(0, 8).forEach(item => {
-                const time = new Date(item.dt * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                const iconUrl = `https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`;
-                hourlyContainer.innerHTML += `
-                    <div class="weather-container">
-                        <p>${time}</p>
-                        <img src="${iconUrl}" class="weather-icon">
-                        <p>${item.main.temp}°C</p>
-                        <p>${item.weather[0].description}</p>
-                    </div>
-                `;
+            const times = data.list.slice(0, 8).map(item => new Date(item.dt * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+            const temps = data.list.slice(0, 8).map(item => item.main.temp);
+            const descriptions = data.list.slice(0, 8).map(item => item.weather[0].description);
+            const icons = data.list.slice(0, 8).map(item => `https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`);
+
+            if (hourlyChartInstance) {
+                hourlyChartInstance.destroy();
+            }
+
+            hourlyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [{
+                        label: '온도 (°C)',
+                        data: temps,
+                        borderColor: '#36a2eb',
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#36a2eb',
+                        pointBorderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: '⏳ 오늘의 시간대별 날씨',
+                        fontColor: '#fff',
+                        fontSize: 18
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            fontColor: '#fff'
+                        }
+                    },
+                    scales: {
+                        xAxes: [{
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                fontColor: '#fff'
+                            }
+                        }],
+                        yAxes: [{
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                fontColor: '#fff'
+                            }
+                        }]
+                    },
+                    tooltips: {
+                        callbacks: {
+                            title: function(tooltipItems, data) {
+                                return '시간: ' + data.labels[tooltipItems[0].index];
+                            },
+                            label: function(tooltipItem, data) {
+                                return ' 온도: ' + data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] + '°C';
+                            },
+                            afterLabel: function(tooltipItem, data) {
+                                const description = descriptions[tooltipItem.index];
+                                const iconUrl = icons[tooltipItem.index];
+                                return [
+                                    '날씨: ' + description,
+                                    `<img src="${iconUrl}" style="width: 40px; height: 40px; margin: 0 auto;">`
+                                ];
+                            }
+                        },
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFontColor: '#fff',
+                        bodyFontColor: '#fff',
+                        borderColor: '#fff',
+                        borderWidth: 1,
+                        displayColors: false
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    }
+                }
             });
         }
 
