@@ -1,96 +1,317 @@
-body {
-    font-family: 'Arial', sans-serif;
-    text-align: center;
-    background: linear-gradient(to right, #4facfe, #00f2fe);
-    color: white;
-    padding: 20px;
-}
-.corner-icon {
-    display: inline-block;
-    margin-right: 0;
-    vertical-align: middle;
-    width: 50px;
-    height: 50px;
-    z-index: 1000;
-}
-.weather-container {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-    padding: 15px;
-    display: inline-block;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    margin-bottom: 10px;
-    width: 16.66%;
-    margin-right: 10px;
-    vertical-align: top;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    word-break: break-word;
-    text-align: center;
-}
-.weather-icon {
-    width: 80px;
-}
-.temp {
-    font-size: 1.5em;
-    font-weight: bold;
-}
-.desc {
-    font-size: 0.9em;
-    margin-top: 5px;
-}
-.btn {
-    background: white;
-    color: #007bff;
-    padding: 10px 15px;
-    border-radius: 10px;
-    border: none;
-    font-size: 1em;
-    cursor: pointer;
-    margin: 5px;
-}
-.forecast-container {
-    display: none;
-    margin-top: 15px;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.chart-container {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    margin-bottom: 20px;
-    width: 100%;
-}
-#current-weather-title {
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 10px;
-}
-#weekly-weather {
-    display: none;
-    margin-top: 15px;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대전 날씨</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            padding: 20px;
+        }
 
-/* ✅ 모바일 스타일 수정 */
-@media (max-width: 768px) {
-    .weather-container {
-        width: 95%;
-        margin: 10px auto;
-        flex-direction: row;           /* 세로 → 가로 정렬 */
-        justify-content: flex-start;
-        align-items: center;
-        text-align: le
+        .corner-icon {
+            display: inline-block;
+            vertical-align: middle;
+            width: 50px;
+            height: 50px;
+            z-index: 1000;
+        }
+
+        .weather-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+            width: 16.66%;
+            margin-right: 10px;
+            vertical-align: top;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            word-break: break-word;
+            text-align: center;
+        }
+
+        .weather-icon {
+            width: 80px;
+        }
+
+        .temp {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .desc {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .btn {
+            background: white;
+            color: #007bff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .forecast-container {
+            display: none;
+            margin-top: 15px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        #current-weather-title {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        #weekly-weather {
+            display: none;
+            margin-top: 15px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .weather-container {
+                width: 95%;
+                margin: 10px auto;
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+                text-align: left;
+            }
+
+            .weather-container img {
+                width: 60px;
+                margin-right: 15px;
+            }
+
+            .weather-container p {
+                margin: 3px 6px;
+                font-size: 0.95em;
+            }
+
+            .forecast-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: stretch;
+            }
+
+            #weekly-weather {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="https://amelie722.github.io/weather-app/weather_character01.png" alt="캐릭터" class="corner-icon">
+    <h1 id="current-weather-title">대전의 현재 날씨</h1>
+    <div class="weather-container" id="current-weather">
+        <p>날씨 정보를 불러오는 중...</p>
+    </div>
+
+    <button class="btn" onclick="fetchHourlyWeather()">⏳ 시간대별 날씨 보기</button>
+    <button class="btn" onclick="fetchWeeklyWeather()">📅 주간 날씨 보기</button>
+
+    <div class="forecast-container" id="hourly-weather">
+        <div class="chart-container">
+            <canvas id="hourlyChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    <div class="forecast-container" id="weekly-weather"></div>
+
+    <script>
+        const apiKey = 'f46b28cd19072ab766192c95e11ce426';
+        const city = 'Daejeon,KR';
+
+        async function fetchCurrentWeather() {
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('날씨 정보를 가져오는 데 실패했습니다.');
+                const data = await response.json();
+                displayCurrentWeather(data);
+            } catch (error) {
+                document.getElementById('current-weather').innerHTML = `<p>${error.message}</p>`;
+            }
+        }
+
+        function displayCurrentWeather(data) {
+            const weatherInfo = document.getElementById('current-weather');
+            const { main, weather, wind } = data;
+            const iconUrl = `https://openweathermap.org/img/wn/${weather[0].icon}@2x.png`;
+
+            weatherInfo.innerHTML = `
+                <img src="${iconUrl}" class="weather-icon" alt="날씨 아이콘">
+                <p class="temp">${main.temp}°C</p>
+                <p class="desc">${weather[0].description}</p>
+                <p>💧 습도: ${main.humidity}%</p>
+                <p>💨 바람: ${wind.speed}m/s</p>
+            `;
+        }
+
+        let hourlyChartInstance = null;
+        async function fetchHourlyWeather() {
+            const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('시간대별 날씨 정보를 가져오는 데 실패했습니다.');
+                const data = await response.json();
+                displayHourlyWeather(data);
+            } catch (error) {
+                document.getElementById('hourly-weather').innerHTML = `<p>${error.message}</p>`;
+            }
+        }
+
+        function displayHourlyWeather(data) {
+            const hourlyContainer = document.getElementById('hourly-weather');
+            const weeklyContainer = document.getElementById('weekly-weather');
+            const ctx = document.getElementById('hourlyChart').getContext('2d');
+
+            weeklyContainer.style.display = 'none';
+            hourlyContainer.style.display = 'block';
+
+            const times = data.list.slice(0, 8).map(item => new Date(item.dt * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+            const temps = data.list.slice(0, 8).map(item => item.main.temp);
+            const descriptions = data.list.slice(0, 8).map(item => item.weather[0].description);
+            const icons = data.list.slice(0, 8).map(item => `https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`);
+
+            if (hourlyChartInstance) {
+                hourlyChartInstance.destroy();
+            }
+
+            hourlyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: times,
+                    datasets: [{
+                        label: '온도 (°C)',
+                        data: temps,
+                        borderColor: '#36a2eb',
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#36a2eb',
+                        pointBorderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: (tooltipItems) => '시간: ' + tooltipItems[0].label,
+                                label: (tooltipItem) => ' 온도: ' + tooltipItem.formattedValue + '°C',
+                                afterLabel: (tooltipItem) => {
+                                    const index = tooltipItem.dataIndex;
+                                    return '날씨: ' + descriptions[index];
+                                }
+                            },
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#fff',
+                            borderWidth: 1,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchWeeklyWeather() {
+            const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('주간 날씨 정보를 가져오는 데 실패했습니다.');
+                const data = await response.json();
+                displayWeeklyWeather(data);
+            } catch (error) {
+                document.getElementById('weekly-weather').innerHTML = `<p>${error.message}</p>`;
+            }
+        }
+
+        function displayWeeklyWeather(data) {
+            const weeklyContainer = document.getElementById('weekly-weather');
+            const hourlyContainer = document.getElementById('hourly-weather');
+
+            hourlyContainer.style.display = 'none';
+            weeklyContainer.style.display = 'flex';
+            weeklyContainer.innerHTML = "<h3>📅 주간 날씨</h3>";
+
+            let dailyData = {};
+            data.list.forEach(item => {
+                const date = new Date(item.dt * 1000).toLocaleDateString('ko-KR');
+                if (!dailyData[date]) {
+                    dailyData[date] = item;
+                }
+            });
+
+            Object.values(dailyData).slice(0, 7).forEach(day => {
+                const date = new Date(day.dt * 1000).toLocaleDateString('ko-KR', { weekday: 'long' });
+                const iconUrl = `https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`;
+                weeklyContainer.innerHTML += `
+                    <div class="weather-container">
+                        <p>${date}</p>
+                        <img src="${iconUrl}" class="weather-icon">
+                        <p>${day.main.temp}°C</p>
+                        <p>${day.weather[0].description}</p>
+                    </div>
+                `;
+            });
+        }
+
+        fetchCurrentWeather();
+    </script>
+</body>
+</html>
