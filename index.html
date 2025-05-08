@@ -13,15 +13,14 @@
             color: white;
             padding: 20px;
         }
-
         .corner-icon {
             display: inline-block;
+            margin-right: 0;
             vertical-align: middle;
             width: 50px;
             height: 50px;
             z-index: 1000;
         }
-
         .weather-container {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 15px;
@@ -38,21 +37,17 @@
             word-break: break-word;
             text-align: center;
         }
-
         .weather-icon {
             width: 80px;
         }
-
         .temp {
             font-size: 1.5em;
             font-weight: bold;
         }
-
         .desc {
             font-size: 0.9em;
             margin-top: 5px;
         }
-
         .btn {
             background: white;
             color: #007bff;
@@ -63,7 +58,6 @@
             cursor: pointer;
             margin: 5px;
         }
-
         .forecast-container {
             display: none;
             margin-top: 15px;
@@ -74,7 +68,6 @@
             flex-wrap: wrap;
             justify-content: center;
         }
-
         .chart-container {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 15px;
@@ -83,13 +76,11 @@
             margin-bottom: 20px;
             width: 100%;
         }
-
         #current-weather-title {
             display: inline-block;
             vertical-align: middle;
             margin-left: 10px;
         }
-
         #weekly-weather {
             display: none;
             margin-top: 15px;
@@ -98,7 +89,7 @@
             margin-right: auto;
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
+            justify-content: flex-start;
         }
 
         @media (max-width: 768px) {
@@ -152,7 +143,8 @@
             <canvas id="hourlyChart" width="400" height="200"></canvas>
         </div>
     </div>
-    <div class="forecast-container" id="weekly-weather"></div>
+    <div class="forecast-container" id="weekly-weather">
+    </div>
 
     <script>
         const apiKey = 'f46b28cd19072ab766192c95e11ce426';
