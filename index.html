@@ -139,6 +139,178 @@
   </style>
 </head>
 <body>
-  <!-- 나머지 HTML 콘텐츠는 동일하게 유지 -->
+  <img src="https://amelie722.github.io/weather-app/weather_character01.png" alt="캐릭터" class="corner-icon">
+  <h1 id="current-weather-title">대전의 현재 날씨</h1>
+  <div class="weather-container" id="current-weather">
+    <p>날씨 정보를 불러오는 중...</p>
+  </div>
+
+  <button class="btn" onclick="fetchHourlyWeather()">⏳ 시간대별 날씨 보기</button>
+  <button class="btn" onclick="fetchWeeklyWeather()">📅 주간 날씨 보기</button>
+
+  <div class="forecast-container" id="hourly-weather">
+    <div class="chart-container">
+      <canvas id="hourlyChart" width="400" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="forecast-container" id="weekly-weather"></div>
+
+  <script>
+    const apiKey = 'f46b28cd19072ab766192c95e11ce426';
+    const city = 'Daejeon,KR';
+
+    async function fetchCurrentWeather() {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('날씨 정보를 가져오는 데 실패했습니다.');
+        const data = await response.json();
+        displayCurrentWeather(data);
+      } catch (error) {
+        document.getElementById('current-weather').innerHTML = `<p>${error.message}</p>`;
+      }
+    }
+
+    function displayCurrentWeather(data) {
+      const weatherInfo = document.getElementById('current-weather');
+      const { main, weather, wind } = data;
+      const iconUrl = `https://openweathermap.org/img/wn/${weather[0].icon}@2x.png`;
+
+      weatherInfo.innerHTML = `
+        <img src="${iconUrl}" class="weather-icon" alt="날씨 아이콘">
+        <p class="temp">${main.temp}°C</p>
+        <p class="desc">${weather[0].description}</p>
+        <p>💧 습도: ${main.humidity}%</p>
+        <p>💨 바람: ${wind.speed}m/s</p>
+      `;
+    }
+
+    let hourlyChartInstance = null;
+    async function fetchHourlyWeather() {
+      const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('시간대별 날씨 정보를 가져오는 데 실패했습니다.');
+        const data = await response.json();
+        displayHourlyWeather(data);
+      } catch (error) {
+        document.getElementById('hourly-weather').innerHTML = `<p>${error.message}</p>`;
+      }
+    }
+
+    function displayHourlyWeather(data) {
+      const hourlyContainer = document.getElementById('hourly-weather');
+      const weeklyContainer = document.getElementById('weekly-weather');
+      const ctx = document.getElementById('hourlyChart').getContext('2d');
+
+      weeklyContainer.style.display = 'none';
+      hourlyContainer.style.display = 'block';
+
+      const times = data.list.slice(0, 8).map(item => new Date(item.dt * 1000).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }));
+      const temps = data.list.slice(0, 8).map(item => item.main.temp);
+      const descriptions = data.list.slice(0, 8).map(item => item.weather[0].description);
+
+      if (hourlyChartInstance) {
+        hourlyChartInstance.destroy();
+      }
+
+      hourlyChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: times,
+          datasets: [{
+            label: '온도 (°C)',
+            data: temps,
+            borderColor: '#36a2eb',
+            fill: false,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+            pointBackgroundColor: '#36a2eb',
+            pointBorderColor: '#fff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              labels: { color: '#fff' }
+            },
+            tooltip: {
+              callbacks: {
+                title: (tooltipItems) => '시간: ' + tooltipItems[0].label,
+                label: (tooltipItem) => ' 온도: ' + tooltipItem.formattedValue + '°C',
+                afterLabel: (tooltipItem) => {
+                  const index = tooltipItem.dataIndex;
+                  return '날씨: ' + descriptions[index];
+                }
+              },
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: '#fff',
+              borderWidth: 1,
+              displayColors: false
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#fff' },
+              grid: { color: 'rgba(255, 255, 255, 0.1)' }
+            },
+            y: {
+              ticks: { color: '#fff' },
+              grid: { color: 'rgba(255, 255, 255, 0.1)' }
+            }
+          }
+        }
+      });
+    }
+
+    async function fetchWeeklyWeather() {
+      const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=kr`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('주간 날씨 정보를 가져오는 데 실패했습니다.');
+        const data = await response.json();
+        displayWeeklyWeather(data);
+      } catch (error) {
+        document.getElementById('weekly-weather').innerHTML = `<p>${error.message}</p>`;
+      }
+    }
+
+    function displayWeeklyWeather(data) {
+      const weeklyContainer = document.getElementById('weekly-weather');
+      const hourlyContainer = document.getElementById('hourly-weather');
+
+      hourlyContainer.style.display = 'none';
+      weeklyContainer.style.display = 'flex';
+      weeklyContainer.innerHTML = "<h3>📅 주간 날씨</h3>";
+
+      let dailyData = {};
+      data.list.forEach(item => {
+        const date = new Date(item.dt * 1000).toLocaleDateString('ko-KR');
+        if (!dailyData[date]) {
+          dailyData[date] = item;
+        }
+      });
+
+      Object.values(dailyData).slice(0, 7).forEach(day => {
+        const date = new Date(day.dt * 1000).toLocaleDateString('ko-KR', { weekday: 'long' });
+        const iconUrl = `https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`;
+        weeklyContainer.innerHTML += `
+          <div class="weather-container">
+            <p>${date}</p>
+            <img src="${iconUrl}" class="weather-icon">
+            <p>${day.main.temp}°C</p>
+            <p>${day.weather[0].description}</p>
+          </div>
+        `;
+      });
+    }
+
+    fetchCurrentWeather();
+  </script>
 </body>
 </html>
